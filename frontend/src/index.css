@@ -1,3 +1,12 @@
+/* если где-то застрял overlay/backdrop */
+.backdrop,
+.overlay,
+.modal-backdrop,
+[data-overlay],
+[data-backdrop] {
+  pointer-events: none !important;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -12,7 +21,8 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
+* { outline: 0px solid transparent; }
+body *:hover { outline: 2px solid rgba(255,0,0,0.35); }
 a {
   font-weight: 500;
   color: #646cff;

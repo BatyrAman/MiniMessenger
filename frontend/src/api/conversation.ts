@@ -1,4 +1,4 @@
-import { apiFetch } from "./http";
+import { api } from "./http";
 
 export type Conversation = {
   id: string;
@@ -8,11 +8,11 @@ export type Conversation = {
 };
 
 export function getConversations() {
-  return apiFetch<Conversation[]>("/api/conversations/");
+  return api<Conversation[]>("/api/conversations/");
 }
 
 export function createDM(other_user_id: string) {
-  return apiFetch<Conversation>("/api/conversations/dm", {
+  return api<Conversation>("/api/conversations/dm", {
     method: "POST",
     body: JSON.stringify({ other_user_id }),
   });

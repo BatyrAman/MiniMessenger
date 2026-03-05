@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from app.api.routes import users, conversations, messages, ws, auth, posts, feed
+from app.api.routes import debug
 
 api_router = APIRouter()
 api_router.include_router(users.router, prefix="/users", tags=["users"])
@@ -10,3 +11,5 @@ api_router.include_router(ws.router, tags=["ws"])
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
 api_router.include_router(posts.router, tags=["posts"])
 api_router.include_router(feed.router, tags=["feed"])
+
+api_router.include_router(debug.router, prefix="/debug", tags=["debug"])

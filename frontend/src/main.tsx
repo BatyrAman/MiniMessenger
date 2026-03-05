@@ -1,25 +1,16 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  Outlet,
-  useLocation,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from "react-router-dom";
 
+import RegisterPage from "./pages/RegisterPage";
 import Feed from "./pages/Feed";
 import LoginPage from "./pages/LoginPage";
+import ChatPages from "./pages/ChatPage";
 
-
-// получение токена
-function getToken(): string | null {
+function getToken() {
   return localStorage.getItem("token");
 }
 
-
-// защита роутов
 function RequireAuth() {
   const location = useLocation();
   const token = getToken();
@@ -27,56 +18,57 @@ function RequireAuth() {
   if (!token) {
     return (
       <Navigate
-        to={`/login?returnTo=${encodeURIComponent(
-          location.pathname + location.search
-        )}`}
+        to={`/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`}
         replace
       />
     );
   }
-
   return <Outlet />;
 }
 
-
-// если уже залогинен — нельзя открыть login
 function RequireGuest() {
-  const token = getToken();
+    const token = getToken();
+    const looksLikeJwt = !!token && token.split(".").length === 3;
 
-  if (token) {
-    return <Navigate to="/" replace />;
-  }
-
-  return <Outlet />;
+    if (!looksLikeJwt) {
+        localStorage.removeItem("token");
+        return <Navigate to="/login" replace />;
+    }
 }
 
-
-// основной layout
 function AppLayout() {
   return (
-    <div style={{ minHeight: "100vh", background: "#fafafa" }}>
+      <div style={{ minHeight: "100vh", background: "#fafafa" }}>
 
-      <header
-        style={{
-          height: 60,
-          borderBottom: "1px solid #ddd",
-          background: "white",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 20px",
-        }}
-      >
-        <h3>MiniGram</h3>
-
-        <button
-          onClick={() => {
-            localStorage.removeItem("token");
-            window.location.href = "/login";
+      <header style={{ height: 60, borderBottom: "1px solid #ddd", background: "#fff" }}>
+        <div
+          style={{
+            maxWidth: 980,
+            margin: "0 auto",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 16px",
           }}
         >
-          Logout
-        </button>
+          <div style={{ fontWeight: 700 }}>MiniGram</div>
+          <button
+            onClick={() => {
+              localStorage.removeItem("token");
+              window.location.href = "/login";
+            }}
+            style={{
+              border: "1px solid #ddd",
+              background: "#fff",
+              padding: "8px 12px",
+              borderRadius: 10,
+              cursor: "pointer",
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
       <main
@@ -88,47 +80,40 @@ function AppLayout() {
       >
         <Outlet />
       </main>
-    </div>
+      </div>
   );
+
 }
 
-
-// страница 404
 function NotFound() {
   return (
-    <div style={{ padding: 40 }}>
+    <div style={{ padding: 24 }}>
       <h2>404</h2>
       <p>Page not found</p>
     </div>
   );
 }
 
-
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-
       <Routes>
-
         {/* публичные страницы */}
         <Route element={<RequireGuest />}>
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/login" element={<LoginPage />} />
         </Route>
 
         {/* защищенные страницы */}
         <Route element={<RequireAuth />}>
           <Route element={<AppLayout />}>
-
             <Route path="/" element={<Feed />} />
-
+            <Route path="/chat/:conversationId" element={<ChatPages />} />
           </Route>
         </Route>
 
-        {/* 404 */}
         <Route path="*" element={<NotFound />} />
-
       </Routes>
-
     </BrowserRouter>
   </React.StrictMode>
 );

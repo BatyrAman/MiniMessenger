@@ -1,33 +1,44 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/http";
+import { Link } from "react-router-dom";
+import UserSearch from "../components/UserSearch";
 
-type Post = {
-  id: string;
-  author_id: string;
-  caption?: string | null;
-  created_at: string;
-  media: { url: string; media_type: "image" | "video"; sort_order: number }[];
-};
+type Conv = { id: string; title: string | null; is_group: boolean };
 
 export default function Feed() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [convs, setConvs] = useState<Conv[]>([]);
+  const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
-    api<Post[]>("/feed").then(setPosts).catch((e)=>console.error(e));
+    api<Conv[]>("/conversations/")
+      .then(setConvs)
+      .catch((e) => {
+        console.error(e);
+        setErr(String(e?.message ?? e));
+      });
   }, []);
 
   return (
-    <div style={{ maxWidth: 520, margin: "20px auto" }}>
+    <div>
+      {/* ✅ поиск пользователей по username */}
+      <UserSearch />
+
       <h2>Feed</h2>
-      {posts.map(p => (
-        <div key={p.id} style={{ border: "1px solid #ddd", borderRadius: 12, marginBottom: 16 }}>
-          {p.media?.[0]?.media_type === "image" && (
-            <img src={p.media[0].url} style={{ width: "100%", display: "block", borderTopLeftRadius: 12, borderTopRightRadius: 12 }} />
-          )}
-          <div style={{ padding: 12 }}>
-            <div style={{ fontSize: 12, opacity: 0.7 }}>{new Date(p.created_at).toLocaleString()}</div>
-            <div style={{ marginTop: 8 }}>{p.caption}</div>
-          </div>
+
+      {err && (
+        <div style={{ background: "#ffecec", border: "1px solid #ffb3b3", padding: 10, borderRadius: 10, marginBottom: 12 }}>
+          {err}
+        </div>
+      )}
+
+      <h3>My conversations</h3>
+
+      {convs.length === 0 && <div style={{ opacity: 0.7 }}>No conversations yet. Use search above and press “Message”.</div>}
+
+      {convs.map((c) => (
+        <div key={c.id} style={{ padding: "6px 0" }}>
+          {/* ✅ правильный роут */}
+          <Link to={`/chat/${c.id}`}>{c.title ?? c.id}</Link>
         </div>
       ))}
     </div>
