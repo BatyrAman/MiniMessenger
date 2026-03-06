@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
-import { api } from "../api/http";
 import { Link } from "react-router-dom";
+import { api } from "../api/http";
 import UserSearch from "../components/UserSearch";
 
-type Conv = { id: string; title: string | null; is_group: boolean };
+type Conv = {
+  id: string;
+  title: string | null;
+  is_group: boolean;
+};
 
 export default function Feed() {
   const [convs, setConvs] = useState<Conv[]>([]);
@@ -19,28 +23,62 @@ export default function Feed() {
   }, []);
 
   return (
-    <div>
-      {/* ✅ поиск пользователей по username */}
-      <UserSearch />
-
-      <h2>Feed</h2>
-
-      {err && (
-        <div style={{ background: "#ffecec", border: "1px solid #ffb3b3", padding: 10, borderRadius: 10, marginBottom: 12 }}>
-          {err}
+    <div className="feed-layout">
+      <aside className="sidebar-panel">
+        <div className="panel-header">
+          <div className="panel-title">Левая панель</div>
+          <div className="panel-subtitle">
+            Поиск пользователей и быстрый старт нового диалога
+          </div>
         </div>
-      )}
-
-      <h3>My conversations</h3>
-
-      {convs.length === 0 && <div style={{ opacity: 0.7 }}>No conversations yet. Use search above and press “Message”.</div>}
-
-      {convs.map((c) => (
-        <div key={c.id} style={{ padding: "6px 0" }}>
-          {/* ✅ правильный роут */}
-          <Link to={`/chat/${c.id}`}>{c.title ?? c.id}</Link>
+        <div className="panel-body">
+          <UserSearch />
         </div>
-      ))}
+      </aside>
+
+      <section className="list-panel">
+        <div className="panel-header">
+          <div className="panel-title">Мои conversations</div>
+          <div className="panel-subtitle">
+            Список диалогов в стиле Telegram
+          </div>
+        </div>
+
+        <div className="panel-body">
+          {err && (
+            <div className="auth-error" style={{ marginBottom: 14 }}>
+              {err}
+            </div>
+          )}
+
+          {convs.length === 0 ? (
+            <div className="empty-state">
+              Пока нет диалогов. Найди пользователя слева и нажми <b>Message</b>.
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: 8 }}>
+              {convs.map((c) => (
+                <Link key={c.id} to={`/chat/${c.id}`} className="conv-row">
+                  <div className="conv-left">
+                    <div className="avatar">
+                      {(c.title ?? "C").slice(0, 1).toUpperCase()}
+                    </div>
+
+                    <div className="conv-meta">
+                      <div className="conv-title">{c.title ?? "Untitled chat"}</div>
+                      <div className="conv-subtitle">
+                        {c.is_group ? "Group chat" : "Direct message"} · {c.id}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="secondary-btn">Open</div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

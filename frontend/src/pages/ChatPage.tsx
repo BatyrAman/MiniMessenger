@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { api, wsUrl, getUserIdFromToken } from "../api/http";
 
 type Msg = {
@@ -10,18 +10,41 @@ type Msg = {
   created_at: string;
 };
 
+type Conv = {
+  id: string;
+  title: string | null;
+  is_group: boolean;
+};
+
+function formatTime(dateStr: string) {
+  const d = new Date(dateStr);
+  return d.toLocaleString();
+}
+
 export default function ChatPages() {
   const { conversationId } = useParams();
   const convId = conversationId ?? "";
+  const currentUserId = getUserIdFromToken();
 
   const [messages, setMessages] = useState<Msg[]>([]);
+  const [convs, setConvs] = useState<Conv[]>([]);
   const [text, setText] = useState("");
   const [wsStatus, setWsStatus] = useState<"connecting" | "open" | "closed">("connecting");
 
   const wsRef = useRef<WebSocket | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  // 1) загрузить историю
+  const activeConversation = useMemo(
+    () => convs.find((c) => c.id === convId),
+    [convs, convId]
+  );
+
+  useEffect(() => {
+    api<Conv[]>("/conversations/")
+      .then(setConvs)
+      .catch(console.error);
+  }, []);
+
   useEffect(() => {
     if (!convId) return;
 
@@ -36,7 +59,6 @@ export default function ChatPages() {
     })();
   }, [convId]);
 
-  // 2) WS connect (ВАЖНО: user_id обязателен)
   useEffect(() => {
     if (!convId) return;
 
@@ -61,11 +83,14 @@ export default function ChatPages() {
         const payload = JSON.parse(event.data);
         if (payload?.type === "message" && payload?.data) {
           const msg: Msg = payload.data;
-          setMessages((prev) => [...prev, msg]);
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === msg.id)) return prev;
+            return [...prev, msg];
+          });
           setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 10);
         }
       } catch {
-        // backend может прислать ping/текст — просто игнор
+        // ignore non-json payload
       }
     };
 
@@ -87,50 +112,118 @@ export default function ChatPages() {
         }),
       });
 
-      // чтобы UI не ждал ws — добавим сразу
-      setMessages((prev) => [...prev, saved]);
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === saved.id)) return prev;
+        return [...prev, saved];
+      });
+
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 10);
     } catch (e) {
       console.error("POST message error:", e);
-      alert("Не удалось отправить сообщение. Проверь membership / токен.");
+      alert("Не удалось отправить сообщение. Проверь membership / token.");
     }
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateRows: "auto 1fr auto", gap: 12, height: "calc(100vh - 120px)" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div>
-          <div style={{ fontWeight: 700 }}>Chat</div>
-          <div style={{ fontSize: 12, opacity: 0.7 }}>
-            conv: {convId} • WS: {wsStatus}
+    <div className="chat-layout">
+      <aside className="chat-sidebar">
+        <div className="sidebar-panel">
+          <div className="panel-header">
+            <div className="panel-title">Conversations</div>
+            <div className="panel-subtitle">Переключение между диалогами</div>
+          </div>
+          <div className="panel-body" style={{ display: "grid", gap: 8 }}>
+            {convs.length === 0 ? (
+              <div className="empty-state">Нет диалогов</div>
+            ) : (
+              convs.map((c) => (
+                <Link
+                  key={c.id}
+                  to={`/chat/${c.id}`}
+                  className="conv-row"
+                  style={{
+                    background: c.id === convId ? "rgba(34, 158, 217, 0.10)" : undefined,
+                  }}
+                >
+                  <div className="conv-left">
+                    <div className="avatar">
+                      {(c.title ?? "C").slice(0, 1).toUpperCase()}
+                    </div>
+                    <div className="conv-meta">
+                      <div className="conv-title">{c.title ?? "Untitled chat"}</div>
+                      <div className="conv-subtitle">
+                        {c.is_group ? "Group chat" : "Direct message"}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            )}
           </div>
         </div>
-      </div>
+      </aside>
 
-      <div style={{ background: "#fff", border: "1px solid #e5e5e5", borderRadius: 12, padding: 12, overflow: "auto" }}>
-        {messages.map((m) => (
-          <div key={m.id} style={{ padding: "8px 0", borderBottom: "1px solid #f2f2f2" }}>
-            <div style={{ fontSize: 12, opacity: 0.6 }}>
-              {m.sender_id} • {new Date(m.created_at).toLocaleString()}
+      <section className="chat-panel chat-window">
+        <div className="chat-header">
+          <div>
+            <div className="panel-title">
+              {activeConversation?.title ?? "Chat"}
             </div>
-            <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
+            <div className="chat-status">
+              Conversation ID: {convId}
+            </div>
           </div>
-        ))}
-        <div ref={bottomRef} />
-      </div>
 
-      <div style={{ display: "flex", gap: 8 }}>
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && send()}
-          placeholder="Write a message..."
-          style={{ flex: 1, padding: "10px 12px", borderRadius: 10, border: "1px solid #ddd" }}
-        />
-        <button onClick={send} style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid #ddd", background: "#fff", cursor: "pointer" }}>
-          Send
-        </button>
-      </div>
+          <div className="status-pill">WS: {wsStatus}</div>
+        </div>
+
+        <div className="messages-area">
+          {messages.length === 0 ? (
+            <div className="empty-state">
+              Пока нет сообщений. Напиши первое сообщение.
+            </div>
+          ) : (
+            <div className="message-list">
+              {messages.map((m) => {
+                const mine = m.sender_id === currentUserId;
+
+                return (
+                  <div
+                    key={m.id}
+                    className={`message-row ${mine ? "mine" : "other"}`}
+                  >
+                    <div className="message-bubble">
+                      <div className="message-meta">
+                        {mine ? "You" : m.sender_id} · {formatTime(m.created_at)}
+                      </div>
+                      <div className="message-text">{m.content}</div>
+                    </div>
+                  </div>
+                );
+              })}
+              <div ref={bottomRef} />
+            </div>
+          )}
+        </div>
+
+        <div className="message-form">
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
+            }}
+            placeholder="Write a message..."
+            className="tg-input"
+          />
+          <button className="primary-btn" onClick={send}>
+            Send
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

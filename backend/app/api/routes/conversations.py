@@ -10,7 +10,8 @@ from app.db.session import get_session
 from app.schemas.conversations import ConversationCreate, ConversationRead
 from app.repositories.conversations_repo import create_conversation, list_user_conversations
 from app.services.chat_service import get_or_create_dm
-
+from app.models.conversation_member import ConversationMember
+from app.models.conversation import Conversation
 router = APIRouter()
 
 @router.post("/", response_model=ConversationRead)

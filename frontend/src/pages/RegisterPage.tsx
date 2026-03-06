@@ -1,6 +1,5 @@
 ﻿import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
 import { api, saveUserIdFromToken } from "../api/http";
 import "./AuthPages.css";
 
@@ -38,50 +37,80 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-shell">
-      <div className="auth-card">
-        <h1 className="auth-title">Create account</h1>
-        <p className="auth-subtitle">Join MiniMessenger and start new conversations.</p>
+      <div className="auth-card auth-card-lg">
+        <div className="auth-side-info">
+          <div className="auth-logo">✦</div>
+          <h1 className="auth-side-title">Create account</h1>
+          <p className="auth-side-text">
+            Зарегистрируйся и начни новый chat за несколько секунд.
+          </p>
 
-        {err && <div className="auth-error">{err}</div>}
+          <div className="auth-feature-list">
+            <div className="auth-feature-item">• уникальный username</div>
+            <div className="auth-feature-item">• быстрый старт диалога</div>
+            <div className="auth-feature-item">• понятный интерфейс для портфолио</div>
+          </div>
+        </div>
 
-        <form onSubmit={submit} className="auth-form">
-          <input
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoComplete="username"
-            className="auth-input"
-            required
-          />
+        <div className="auth-form-side">
+          <h2 className="auth-title">Регистрация</h2>
+          <p className="auth-subtitle">
+            Создай аккаунт для MiniMessenger.
+          </p>
 
-          <input
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            autoComplete="email"
-            className="auth-input"
-            required
-          />
+          {err && <div className="auth-error">{err}</div>}
 
-          <input
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            autoComplete="new-password"
-            className="auth-input"
-            required
-          />
+          <form onSubmit={submit} className="auth-form">
+            <label className="auth-label">
+              <span>Username</span>
+              <input
+                placeholder="your_username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                className="auth-input"
+                required
+              />
+            </label>
 
-          <button className="auth-submit" disabled={loading}>
-            {loading ? "Creating..." : "Create account"}
-          </button>
-        </form>
+            <label className="auth-label">
+              <span>Email</span>
+              <input
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                autoComplete="email"
+                className="auth-input"
+                required
+              />
+            </label>
 
-        <p className="auth-switch">
-          Already have an account? <Link to="/login" className="auth-link">Sign in</Link>
-        </p>
+            <label className="auth-label">
+              <span>Password</span>
+              <input
+                placeholder="Минимум 6+ символов"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                autoComplete="new-password"
+                className="auth-input"
+                required
+              />
+            </label>
+
+            <button className="auth-submit" disabled={loading}>
+              {loading ? "Creating..." : "Create account"}
+            </button>
+          </form>
+
+          <p className="auth-switch">
+            Уже есть аккаунт?{" "}
+            <Link to="/login" className="auth-link">
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

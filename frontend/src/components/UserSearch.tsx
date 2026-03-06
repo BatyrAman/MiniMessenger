@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/http";
 
-type UserLite = { id: string; username: string; avatar_url?: string | null };
+type UserLite = {
+  id: string;
+  username: string;
+  avatar_url?: string | null;
+};
 
 export default function UserSearch() {
   const [q, setQ] = useState("");
@@ -37,33 +41,48 @@ export default function UserSearch() {
   }
 
   return (
-    <div style={{ background: "#fff", border: "1px solid #eee", borderRadius: 12, padding: 12, marginBottom: 12 }}>
-      <div style={{ fontWeight: 700, marginBottom: 8 }}>Find people</div>
+    <div className="search-panel">
+      <div className="panel-header">
+        <div className="panel-title">Find users</div>
+        <div className="panel-subtitle">
+          Введи username и начни новый chat
+        </div>
+      </div>
 
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Search by username (e.g. Anny)"
-        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #ddd" }}
-      />
+      <div className="panel-body">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search by username"
+          className="tg-input"
+        />
 
-      <div style={{ marginTop: 10 }}>
-        {loading && <div style={{ opacity: 0.7 }}>Loading...</div>}
+        <div style={{ marginTop: 14, display: "grid", gap: 8 }}>
+          {loading && <div className="empty-state">Loading users...</div>}
 
-        {users.map((u) => (
-          <div key={u.id} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #f2f2f2" }}>
-            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              <div style={{ width: 36, height: 36, borderRadius: 18, background: "#eee" }} />
-              <div style={{ fontWeight: 600 }}>{u.username}</div>
+          {!loading && q.trim() && users.length === 0 && (
+            <div className="empty-state">Никого не найдено</div>
+          )}
+
+          {users.map((u) => (
+            <div key={u.id} className="user-row">
+              <div className="user-left">
+                <div className="avatar">
+                  {u.username.slice(0, 1).toUpperCase()}
+                </div>
+
+                <div className="user-meta">
+                  <div className="user-name">{u.username}</div>
+                  <div className="user-id">{u.id}</div>
+                </div>
+              </div>
+
+              <button className="primary-btn" onClick={() => startChat(u.id)}>
+                Message
+              </button>
             </div>
-            <button
-              onClick={() => startChat(u.id)}
-              style={{ border: "1px solid #ddd", background: "#fff", padding: "8px 12px", borderRadius: 10, cursor: "pointer" }}
-            >
-              Message
-            </button>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
