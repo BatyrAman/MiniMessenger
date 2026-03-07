@@ -6,3 +6,7 @@ greenlet
 uvicorn[standard]
 python-multipart
 aiofiles
+python-jose[cryptography]
+email-validator
+alembic
+passlib

@@ -7,12 +7,13 @@ from app.db.session import get_session
 from app.core.config import settings
 from app.core.security import hash_password, verify_password, create_access_token
 from app.models.user import User
-from app.schemas.auth import RegisterIn, LoginIn, TokenOut
+from app.schemas.auth import RegisterRequest, LoginIn, TokenOut
 
 router = APIRouter()
 
 @router.post("/register", response_model=TokenOut)
-async def register(data: RegisterIn, session: AsyncSession = Depends(get_session)):
+async def register(data: RegisterRequest, session: AsyncSession = Depends(get_session)):
+    password_hash = hash_password(data.password)
     # 1) проверка email
     existing = (await session.execute(select(User).where(User.email == data.email))).scalar_one_or_none()
     if existing:
@@ -27,9 +28,9 @@ async def register(data: RegisterIn, session: AsyncSession = Depends(get_session
     user = User(
         username=data.username,
         email=data.email,
-        password_hash=hash_password(data.password),
+        password_hash=password_hash,
         first_name=data.first_name,
-        surname=data.surname,
+        surname=data.surname
     )
     session.add(user)
 

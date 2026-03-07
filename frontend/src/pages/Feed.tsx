@@ -7,6 +7,7 @@ type Conv = {
   id: string;
   title: string | null;
   is_group: boolean;
+  display_name?: string | null;
 };
 
 export default function Feed() {
@@ -61,11 +62,11 @@ export default function Feed() {
                 <Link key={c.id} to={`/chat/${c.id}`} className="conv-row">
                   <div className="conv-left">
                     <div className="avatar">
-                      {(c.title ?? "C").slice(0, 1).toUpperCase()}
+                      {(c.display_name ?? "C").slice(0, 1).toUpperCase()}
                     </div>
 
                     <div className="conv-meta">
-                      <div className="conv-title">{c.title ?? "Untitled chat"}</div>
+                      <div className="conv-title">{c.display_name}</div>
                       <div className="conv-subtitle">
                         {c.is_group ? "Group chat" : "Direct message"} · {c.id}
                       </div>

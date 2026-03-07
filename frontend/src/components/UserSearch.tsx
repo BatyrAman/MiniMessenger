@@ -7,6 +7,12 @@ type UserLite = {
   username: string;
   avatar_url?: string | null;
 };
+type ConversationLite = {
+      id: string;
+      title: string | null;
+      is_group: boolean;
+      display_name?: string | null;
+    };
 
 export default function UserSearch() {
   const [q, setQ] = useState("");
@@ -34,11 +40,12 @@ export default function UserSearch() {
   }, [q]);
 
   async function startChat(userId: string) {
-    const res = await api<{ conversation_id: string }>(`/conversations/dm/${userId}`, {
-      method: "POST",
-    });
-    nav(`/chat/${res.conversation_id}`);
-  }
+      const res = await api<ConversationLite>(`/conversations/dm/${userId}`, {
+        method: "POST",
+      });
+
+      nav(`/chat/${res.id}`);
+    }
 
   return (
     <div className="search-panel">

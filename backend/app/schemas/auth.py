@@ -1,12 +1,19 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, model_validator
 
-class RegisterIn(BaseModel):
-    username: str = Field(min_length=3, max_length=30)
+
+class RegisterRequest(BaseModel):
+    first_name: str
+    surname: str
+    username: str
     email: EmailStr
-    password: str = Field(min_length=6, max_length=72)
-    first_name: str | None = Field(default=None, max_length=50)
-    surname: str | None = Field(default=None, max_length=50)
-    # print("REGISTER password length:", len(data.password), "bytes:", len(data.password.encode("utf-8")))
+    password: str
+    password_confirm: str
+
+    @model_validator(mode="after")
+    def validate_passwords(self):
+        if self.password != self.password_confirm:
+            raise ValueError("Passwords do not match")
+        return self
 class LoginIn(BaseModel):
     email: EmailStr
     password: str = Field(min_length=1, max_length=72)
