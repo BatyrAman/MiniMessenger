@@ -11,7 +11,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=
     ["http://localhost:5173",
-    "https://minimessenger-app.vercel.app"],
+        "http://127.0.0.1:5173",
+        "https://mini-messenger-scib.vercel.app",
+        "https://minimessenger-app.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
