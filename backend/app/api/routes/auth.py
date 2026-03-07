@@ -28,6 +28,8 @@ async def register(data: RegisterIn, session: AsyncSession = Depends(get_session
         username=data.username,
         email=data.email,
         password_hash=hash_password(data.password),
+        first_name=data.first_name,
+        surname=data.surname,
     )
     session.add(user)
 

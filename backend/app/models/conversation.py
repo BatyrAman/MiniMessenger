@@ -14,5 +14,6 @@ class Conversation(SQLModel, table=True):
     title: Optional[str] = Field(default=None, max_length=200)  # для group chat
     is_group: bool = Field(default=False)
 
+    created_by: UUID | None = Field(default=None, foreign_key="users.id")
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)
 

@@ -12,7 +12,8 @@ class User(SQLModel, table=True):
     email: str = Field(index=True, unique=True, max_length=120)
     password_hash: str
 
-    full_name: Optional[str] = Field(default=None, max_length=80)
+    first_name: Optional[str] = Field(default=None, max_length=50)
+    surname: Optional[str] = Field(default=None, max_length=50)
     bio: Optional[str] = Field(default=None, max_length=160)
     avatar_url: Optional[str] = Field(default=None, max_length=400)
 
