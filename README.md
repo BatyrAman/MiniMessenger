@@ -25,31 +25,51 @@ Cloud deployment (Render + Vercel)
 -------------------------------
 
 Tech Stack
+
 Backend
+
 Python
+
 FastAPI
+
 SQLAlchemy / SQLModel
+
 PostgreSQL
+
 WebSockets
+
 JWT Authentication
+
 AsyncIO
+
 Frontend
+
 React
+
 TypeScript
+
 Vite
+
 Axios
+
 WebSocket client
+
 DevOps / Infrastructure
+
 Docker
+
 Docker Compose
+
 Render (Backend hosting)
+
 Vercel (Frontend hosting)
+
 Neon PostgreSQL
+
 GitHub
+----------------------------------
 Author
 
------------------------
-
 Batyr Aman
-Computer Science Student
+Information Systems Student
 Interested in Backend, DevOps and Cloud Engineering
