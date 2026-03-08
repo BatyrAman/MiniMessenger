@@ -71,5 +71,7 @@ GitHub
 Author
 
 Batyr Aman
+
 Information Systems Student
+
 Interested in Backend, DevOps and Cloud Engineering
